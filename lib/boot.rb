@@ -6,4 +6,6 @@ require 'entities/sandbox'
 
 require 'repositories/sandbox_repository'
 
+require 'mailer'
+
 SANDBOX_PATH = ENV['SANDBOX_PATH'] || ''

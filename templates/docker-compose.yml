@@ -1,7 +1,7 @@
 version: '3'
 services:
   agent1_${TOKEN}:
-    image: humancolossus/agent:version-0.4.5-ext-1
+    image: humancolossus/agent:version-0.5.1-ext
     container_name: ${TOKEN}.agent1.localhost
     command: /bin/bash -c "./startup.sh"
     environment:
@@ -13,7 +13,7 @@ services:
       - von_von
 
   agent2_${TOKEN}:
-    image: humancolossus/agent:version-0.4.5-ext-1
+    image: humancolossus/agent:version-0.5.1-ext
     container_name: ${TOKEN}.agent2.localhost
     command: /bin/bash -c "./startup.sh"
     environment:
@@ -25,9 +25,11 @@ services:
       - von_von
 
   data_vault_${TOKEN}:
-    image: humancolossus/oca-data-vault:version-0.1.2
+    image: humancolossus/oca-data-vault:version-0.1.3
     container_name: data-vault-${TOKEN}
     command: /bin/bash -c "bundle exec rackup -o 0.0.0.0 -p 80"
+    environment:
+      - MONGODB_URI=data-vault-mongodb-${TOKEN}:27017
     volumes:
       - ${SANDBOX_PATH}/${TOKEN}/data_vault/storage:/usr/src/app/storage
     networks:

@@ -15,7 +15,7 @@ module Services
         script = Entities::Script.load(
           path: File.join(LIB_PATH, 'scripts', 'stop_sandbox.sh'),
           variables: {
-            token: sandbox.token,
+            token: sandbox.instance_uuid,
             sandbox_dir: "#{ROOT_PATH}/sandbox",
             nginx_dir: "#{ROOT_PATH}/nginx_conf"
           }

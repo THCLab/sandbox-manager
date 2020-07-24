@@ -1,0 +1,5 @@
+:address: <smtp_address>
+:port: <port>
+:user_name: <user_name>
+:password: <password>
+:authentication: 'plain'
