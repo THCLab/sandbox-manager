@@ -9,3 +9,4 @@ require 'repositories/sandbox_repository'
 require 'mailer'
 
 SANDBOX_PATH = ENV['SANDBOX_PATH'] || ''
+INSTANCES_LIMIT = ENV['INSTANCES_LIMIT'].to_i || 0

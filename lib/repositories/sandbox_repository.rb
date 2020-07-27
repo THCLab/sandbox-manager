@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'entities/sandbox'
+require 'json'
 
 module Repositories
   class SandboxRepository
@@ -12,11 +13,23 @@ module Repositories
     end
 
     def save(entity)
+      entity_json = entity.to_h.slice(
+        :email, :instance_uuid, :created_at, :lifetime
+      ).to_json
+
       redis.multi do
         redis.set("#{entity.email}:instance_uuid", entity.instance_uuid)
         redis.set("#{entity.email}:created_at", entity.created_at)
         redis.set("#{entity.email}:lifetime", entity.lifetime)
         redis.set("#{entity.email}:active", entity.active)
+
+        if entity.active
+          redis.rpush('active_sandboxes', entity_json)
+          redis.incr('active_sandboxes_counter')
+        else
+          redis.lrem('active_sandboxes', 1, entity_json)
+          redis.decr('active_sandboxes_counter')
+        end
       end
     end
 
@@ -32,18 +45,16 @@ module Repositories
       end
     end
 
-    def all
-      _, email_keys = redis.scan(0, match: '*:instance_uuid')
-      emails = email_keys.map { |k| k.split(':')[0] }
-      emails.each_with_object([]) do |email, memo|
-        memo << find_by_email(email)
-      end
+    def count_active
+      redis.get('active_sandboxes_counter').to_i || 0
     end
 
     def overdue
-      all.select do |sandbox|
-        sandbox.active && sandbox.overdue?
+      active_sandboxes = redis.lrange('active_sandboxes', 0, -1).map do |json|
+        sandbox_hash = JSON.parse(json, symbolize_names: true)
+        Entities::Sandbox.new(sandbox_hash.merge(active: true))
       end
+      active_sandboxes.select(&:overdue?)
     end
   end
 end

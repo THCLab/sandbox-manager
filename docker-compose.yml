@@ -5,6 +5,7 @@ services:
     command: /bin/bash -c "bundle exec rackup -o 0.0.0.0 -p 80"
     environment:
       - SANDBOX_PATH=$SANDBOX_PATH
+      - INSTANCES_LIMIT=2
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - $SANDBOX_PATH:/usr/src/app/sandbox

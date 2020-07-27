@@ -13,10 +13,9 @@ module Services
       valid_params = validate(params)
       return { success: false, errors: ['invalid params'] } unless valid_params
       email = valid_params.fetch(:email)
-      if has_active_sandbox(email)
-        sandbox = sandbox_repo.find_by_email(email)
-        return { success: true, data: sandbox.to_h }
-      end
+      active_sandbox = find_active_sandbox(email)
+      return { success: true, data: active_sandbox.to_h } if active_sandbox
+      return { success: false, errors: ['instances limit reached'] } if limit_reached?
       sandbox = Entities::Sandbox.create(email: email)
 
       script = Entities::Script.load(
@@ -40,9 +39,13 @@ module Services
       end
     end
 
-    private def has_active_sandbox(email)
+    private def find_active_sandbox(email)
       sandbox = sandbox_repo.find_by_email(email)
-      sandbox ? sandbox.active : false
+      sandbox && sandbox.active ? sandbox : nil
+    end
+
+    private def limit_reached?
+      sandbox_repo.count_active >= INSTANCES_LIMIT
     end
 
     private def validate(params)
